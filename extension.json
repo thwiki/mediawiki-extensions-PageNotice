@@ -28,8 +28,9 @@
 		"remoteExtPath": "extensions/PageNotice"
 	},
 	"Hooks": {
-		"ArticleViewHeader": "PageNoticeHooks::renderHeader",
-		"ArticleViewFooter": "PageNoticeHooks::renderFooter"
+		"OutputPageBeforeHTML": "PageNoticeHooks::renderForPage",
+		"ImageOpenShowImageInlineBefore": "PageNoticeHooks::renderForImage",
+		"EditPage::showEditForm:initial": "PageNoticeHooks::renderForEdit"
 	},
 	"config": {
 		"PageNoticeDisablePerPageNotices": {
