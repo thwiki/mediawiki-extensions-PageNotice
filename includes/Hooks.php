@@ -16,28 +16,92 @@ use Html;
 
 class Hooks {
 	/**
-	 * Renders relevant header notices for the current page.
-	 * @param Article $article
-	 * @param bool &$outputDone
-	 * @param bool &$pcache
+	 * Renders relevant header and footer notices for the current edit page.
+	 * @param EditPage $edit
+	 * @param OutputPage $out
+	 * @return bool
 	 */
-	public static function onArticleViewHeader( Article $article, &$outputDone, &$pcache ) {
-		$pageNoticeDisablePerPageNotices = $article->getContext()
+	static public function onEditPageshowEditForminitial( EditPage $editPage, OutputPage $output ) {
+		$pageNoticeDisablePerPageNotices = $output->getContext()
 			->getConfig()
 			->get( 'PageNoticeDisablePerPageNotices' );
 
-		$out = $article->getContext()->getOutput();
-		$title = $out->getTitle();
-		$name = $title->getPrefixedDBKey();
-		$ns = $title->getNamespace();
+		$name = $output->getTitle()->getPrefixedDBKey();
+		$ns = $output->getTitle()->getNamespace();
 
-		$header = $out->msg( "top-notice-$name" );
-		$nsheader = $out->msg( "top-notice-ns-$ns" );
+		$key = str_replace( '/', '-', $name );
+		$header = $output->msg( "top-notice-$key" );
+		$nsheader = $output->msg( "top-notice-ns-$ns" );
+		$footer = $output->msg( "bottom-notice-$key" );
+		$nsfooter = $output->msg( "bottom-notice-ns-$ns" );
 
 		$needStyles = false;
 
 		if ( !$pageNoticeDisablePerPageNotices && !$header->isBlank() ) {
-			$out->addHTML(
+			$editPage->editFormPageTop = Html::rawElement(
+				'div',
+				[ 'id' => 'top-notice' ],
+				$header->parse()
+			) . $editPage->editFormPageTop;
+			$needStyles = true;
+		}
+		if ( !$nsheader->isBlank() ) {
+			$editPage->editFormPageTop = Html::rawElement(
+				'div',
+				[ 'id' => 'top-notice-ns' ],
+				$nsheader->parse()
+			) . $editPage->editFormPageTop;
+			$needStyles = true;
+		}
+		if ( !$pageNoticeDisablePerPageNotices && !$footer->isBlank() ) {
+			$editPage->editFormPageTop = $editPage->editFormPageTop . Html::rawElement(
+				'div',
+				[ 'id' => 'bottom-notice' ],
+				$footer->parse()
+			);
+			$needStyles = true;
+		}
+		if ( !$nsfooter->isBlank() ) {
+			$editPage->editFormPageTop = $editPage->editFormPageTop . Html::rawElement(
+				'div',
+				[ 'id' => 'bottom-notice-ns' ],
+				$nsfooter->parse()
+			);
+			$needStyles = true;
+		}
+
+		if ( $needStyles ) {
+			$output->addModuleStyles( 'ext.pageNotice' );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Renders relevant header and footer notices for the current file info page.
+	 * @param ImagePage $imagepage
+	 * @param OutputPage $output
+	 * @return bool
+	 */
+	static public function onImageOpenShowImageInlineBefore( ImagePage $imagepage, OutputPage $output ) {
+		$pageNoticeDisablePerPageNotices = $output->getContext()
+			->getConfig()
+			->get( 'PageNoticeDisablePerPageNotices' );
+
+		$name = $output->getTitle()->getPrefixedDBKey();
+		$ns = $output->getTitle()->getNamespace();
+		if ($ns !== NS_FILE || Action::getActionName( $output->getContext() ) == 'edit') return true;
+
+		$key = str_replace( '/', '-', $name );
+		$header = $output->msg( "top-notice-$key" );
+		$nsheader = $output->msg( "top-notice-ns-$ns" );
+		$footer = $output->msg( "bottom-notice-$key" );
+		$nsfooter = $output->msg( "bottom-notice-ns-$ns" );
+
+		$needStyles = false;
+
+		if ( !$pageNoticeDisablePerPageNotices && !$header->isBlank() ) {
+			$output->prependHTML(
 				Html::rawElement(
 					'div',
 					[ 'id' => 'top-notice' ],
@@ -47,7 +111,7 @@ class Hooks {
 			$needStyles = true;
 		}
 		if ( !$nsheader->isBlank() ) {
-			$out->addHTML(
+			$output->prependHTML(
 				Html::rawElement(
 					'div',
 					[ 'id' => 'top-notice-ns' ],
@@ -56,43 +120,94 @@ class Hooks {
 			);
 			$needStyles = true;
 		}
-
-		if ( $needStyles ) {
-			$out->addModuleStyles( 'ext.pageNotice' );
-		}
-	}
-
-	/**
-	 * Renders relevant footer notices for the current page.
-	 * @param Article $article
-	 * @param bool $patrolFooterShown
-	 */
-	public static function onArticleViewFooter( Article $article, $patrolFooterShown ) {
-		$pageNoticeDisablePerPageNotices = $article->getContext()
-			->getConfig()
-			->get( 'PageNoticeDisablePerPageNotices' );
-
-		$out = $article->getContext()->getOutput();
-		$title = $out->getTitle();
-		$name = $title->getPrefixedDBKey();
-		$ns = $title->getNamespace();
-
-		$footer = $out->msg( "bottom-notice-$name" );
-		$nsfooter = $out->msg( "bottom-notice-ns-$ns" );
-
-		$needStyles = false;
-
 		if ( !$pageNoticeDisablePerPageNotices && !$footer->isBlank() ) {
-			$out->addHTML( '<div id="bottom-notice">' . $footer->parse() . '</div>' );
+			$output->addHTML(
+				Html::rawElement(
+					'div',
+					[ 'id' => 'bottom-notice' ],
+					$footer->parse()
+				)
+			);
 			$needStyles = true;
 		}
 		if ( !$nsfooter->isBlank() ) {
-			$out->addHTML( '<div id="bottom-notice-ns">' . $nsfooter->parse() . '</div>' );
+			$output->addHTML(
+				Html::rawElement(
+					'div',
+					[ 'id' => 'bottom-notice-ns' ],
+					$nsfooter->parse()
+				)
+			);
 			$needStyles = true;
 		}
 
 		if ( $needStyles ) {
-			$out->addModuleStyles( 'ext.pageNotice' );
+			$output->addModuleStyles( 'ext.pageNotice' );
 		}
+
+		return true;
+	}
+
+	/**
+	 * Renders relevant header and footer notices for the current page.
+	 * @param OutputPage $output
+	 * @param string $text
+	 * @return bool
+	 */
+	static public function onOutputPageBeforeHTML( OutputPage &$output, string &$text ) {
+		$pageNoticeDisablePerPageNotices = $output->getContext()
+			->getConfig()
+			->get( 'PageNoticeDisablePerPageNotices' );
+
+		$name = $output->getTitle()->getPrefixedDBKey();
+		$ns = $output->getTitle()->getNamespace();
+		if ( $ns === NS_FILE || ( is_null( $output->getRevisionId() ) && !$output->isArticle() ) ) return true;
+
+		$key = str_replace( '/', '-', $name );
+		$header = $output->msg( "top-notice-$key" );
+		$nsheader = $output->msg( "top-notice-ns-$ns" );
+		$footer = $output->msg( "bottom-notice-$key" );
+		$nsfooter = $output->msg( "bottom-notice-ns-$ns" );
+
+		$needStyles = false;
+
+		if ( !$pageNoticeDisablePerPageNotices && !$header->isBlank() ) {
+			$text = Html::rawElement(
+				'div',
+				[ 'id' => 'top-notice' ],
+				$header->parse()
+			) . $text;
+			$needStyles = true;
+		}
+		if ( !$nsheader->isBlank() ) {
+			$text = Html::rawElement(
+				'div',
+				[ 'id' => 'top-notice-ns' ],
+				$nsheader->parse()
+			) . $text;
+			$needStyles = true;
+		}
+		if ( !$pageNoticeDisablePerPageNotices && !$footer->isBlank() ) {
+			$text = $text . Html::rawElement(
+				'div',
+				[ 'id' => 'bottom-notice' ],
+				$footer->parse()
+			);
+			$needStyles = true;
+		}
+		if ( !$nsfooter->isBlank() ) {
+			$text = $text . Html::rawElement(
+				'div',
+				[ 'id' => 'bottom-notice-ns' ],
+				$nsfooter->parse()
+			);
+			$needStyles = true;
+		}
+
+		if ( $needStyles ) {
+			$output->addModuleStyles( 'ext.pageNotice' );
+		}
+
+		return true;
 	}
 }

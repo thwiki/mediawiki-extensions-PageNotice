@@ -28,8 +28,10 @@
 		"remoteExtPath": "extensions/PageNotice"
 	},
 	"Hooks": {
-		"ArticleViewHeader": "MediaWiki\\Extension\\PageNotice\\Hooks::onArticleViewHeader",
-		"ArticleViewFooter": "MediaWiki\\Extension\\PageNotice\\Hooks::onArticleViewFooter"
+		"OutputPageBeforeHTML": "MediaWiki\\Extension\\PageNotice\\Hooks::onOutputPageBeforeHTML",
+		"ImageOpenShowImageInlineBefore": "MediaWiki\\Extension\\PageNotice\\Hooks::onImageOpenShowImageInlineBefore",
+		"EditPage::showEditForm:initial": "MediaWiki\\Extension\\PageNotice\\Hooks::onEditPageshowEditForminitial"
+
 	},
 	"config": {
 		"PageNoticeDisablePerPageNotices": {
