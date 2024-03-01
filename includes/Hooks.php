@@ -11,8 +11,11 @@
 
 namespace MediaWiki\Extension\PageNotice;
 
-use Article;
+use Action;
+use ImagePage;
+use EditPage;
 use Html;
+use OutputPage;
 
 class Hooks {
 	/**
