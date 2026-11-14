@@ -29,7 +29,8 @@
 	},
 	"Hooks": {
 		"ArticleViewHeader": "Hooks",
-		"ArticleViewFooter": "Hooks"
+		"ArticleViewFooter": "Hooks",
+		"ImageOpenShowImageInlineBefore": "Hooks"
 	},
 	"config": {
 		"PageNoticeDisablePerPageNotices": {
